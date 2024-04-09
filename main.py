@@ -1,6 +1,9 @@
 from docx import Document
 from datetime import datetime
 from docx.shared import Pt
+import openpyxl
+from openpyxl.styles import PatternFill, Border, Side, Alignment, Font, Color, numbers
+from openpyxl.utils import get_column_letter
 import pandas as pd
 import warnings
 import time
@@ -78,6 +81,36 @@ def main():
         
         return cuentas
 
+    def formatear_excel(razon_social):
+        wb = openpyxl.load_workbook("./FINAL/"+razon_social+".xlsx")
+        ws = wb.active
+        fill = PatternFill(start_color="16365C", end_color="16365C", fill_type="solid")
+        font_header = Font(name="Arial", size=10, color="FFFFFF", bold=True)
+        font_cells = Font(name="Arial", size=10)
+        border = Border(left=Side(style="thin"), 
+                        right=Side(style="thin"), 
+                        top=Side(style="thin"), 
+                        bottom=Side(style="thin"))
+        alignment = Alignment(horizontal="center", vertical="center")
+        column_widths = [9, 13, 17, 13, 4, 8, 8, 10]
+        for row in ws.iter_rows():
+            for cell in row:
+                cell.border = border
+                cell.alignment = alignment
+                cell.font = font_cells
+                if cell.row == 1:  # Si la celda está en la primera fila (encabezado)
+                    cell.fill = fill
+                    cell.font = font_header
+                if cell.column == 4:  # Si la celda está en la cuarta columna
+                    cell.number_format = "dd/mm/yyyy"
+                if cell.column == 8:  # Si la celda está en la última columna
+                    if cell.row > 1:  # Si la celda está en la primera fila (encabezado)
+                        cell.number_format = numbers.FORMAT_NUMBER_00
+                        cell.alignment = Alignment(horizontal="right", vertical="center")
+        for i, column_width in enumerate(column_widths):
+            ws.column_dimensions[get_column_letter(i+1)].width = column_width
+        wb.save("./FINAL/"+razon_social+".xlsx")
+    
     def generar_cartas_sin_deudaxvencer(df_cuenta, df_cruce, cuenta):
         razon_social = df_cruce[df_cruce["Deudor"]==cuenta]["NOMBRE DAC"].iloc[0].upper()
         direccion_legal = df_cruce[df_cruce["Deudor"]==cuenta]["DIRECCIÓN LEGAL"].iloc[0]
@@ -100,8 +133,8 @@ def main():
         razon_social_2 = razon_social
         
         df_cuenta.to_excel("./FINAL/"+razon_social+".xlsx", index=False) # Sin deudas por vencer
+        formatear_excel(razon_social)
         
-        #word_file = "MODELO_2.docx"
         doc = Document(modelo_2)
         replacements = {
             "[fecha_hoy]": {"value": str(fecha_hoy), "font_size": 11},
@@ -158,8 +191,8 @@ def main():
         razon_social_2 = razon_social
         
         df_cuenta.to_excel("./FINAL/"+razon_social+".xlsx", index=False) # Con deudas por vencer
+        formatear_excel(razon_social)
         
-        #word_file = "MODELO_1.docx"
         doc = Document(modelo_1)
         replacements = {
             "[fecha_hoy]": {"value": str(fecha_hoy), "font_size": 11},
