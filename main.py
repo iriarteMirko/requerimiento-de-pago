@@ -3,6 +3,7 @@ from datetime import datetime
 from docx.shared import Pt
 import pandas as pd
 import warnings
+import time
 
 warnings.filterwarnings("ignore")
 
@@ -38,11 +39,19 @@ def main():
         df_cruce = df_cruce[df_cruce["Deudor"].notna()]
         df_cruce["Deudor"] = df_cruce["Deudor"].astype("Int64").astype("str")
         df_cruce = df_cruce.loc[~df_cruce["ANALISTA_ACT"].isin(analistas_no_deseados)]
-        #print("Cruce Data: ",df_cruce.shape,"\n")
 
-        analistas =df_cruce["ANALISTA_ACT"].drop_duplicates().to_list()
-        print("Analistas validados: ",analistas,"\n")
-
+        analistas = df_cruce["ANALISTA_ACT"].drop_duplicates().to_list()
+        analistas_no_validados = []
+        for analista in analistas:
+            if analista in analistas_validados:
+                pass
+            else:
+                analistas_no_validados.append(analista)
+        if len(analistas_no_validados) == 0:
+            print("Analistas validados\n")
+        else:
+            print("Analistas no validados: ",analistas_no_validados,"\n")
+        
         cuentas_encontradas = encontrar_cuentas(df_cruce, cuentas)
 
         ########## CRUCE BASE ##########
@@ -63,10 +72,9 @@ def main():
                 cuentas_no_encontradas.append(cuenta)
 
         if len(cuentas_no_encontradas) == 0:
-            print("Deudores encontrados: ",cuentas)
+            print("Deudores validados.\n")
         else:
-            print("Deudores encontrados: ",cuentas)
-            print("Deudores no encontrados: ",cuentas_no_encontradas)
+            print("Deudores no encontrados: ",cuentas_no_encontradas,"\n")
         
         return cuentas
 
@@ -95,74 +103,30 @@ def main():
         
         #word_file = "MODELO_2.docx"
         doc = Document(modelo_2)
+        replacements = {
+            "[fecha_hoy]": {"value": str(fecha_hoy), "font_size": 11},
+            "[razon_social]": {"value": str(razon_social), "font_size": 11, "bold": True},
+            "[direccion_legal]": {"value": str(direccion_legal), "font_size": 11},
+            "[distrito]": {"value": str(distrito), "font_size": 11},
+            "[provincia]": {"value": str(provincia), "font_size": 11},
+            "[departamento]": {"value": str(departamento), "font_size": 11},
+            "[dias_demora]": {"value": str(dias_demora), "font_size": 11},
+            "[deuda_vencida_soles]": {"value": str(deuda_vencida_soles), "font_size": 11},
+            "[deuda_vencida_texto]": {"value": str(deuda_vencida_texto), "font_size": 11},
+            "[analista]": {"value": str(analista), "font_size": 11},
+            "[correo_analista]": {"value": str(correo_analista), "font_size": 11},
+            "[dias_demora_2]": {"value": str(dias_demora_2), "font_size": 8},
+            "[razon_social_2]": {"value": str(razon_social_2), "font_size": 8, "bold": True},
+        }
+        
         for paragraph in doc.paragraphs:
-            if "[fecha_hoy]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[fecha_hoy]", str(fecha_hoy))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[razon_social]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[razon_social]", str(razon_social))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-                run.bold = True
-            if "[direccion_legal]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[direccion_legal]", str(direccion_legal))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[distrito]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[distrito]", str(distrito))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[provincia]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[provincia]", str(provincia))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[departamento]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[departamento]", str(departamento))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[dias_demora]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[dias_demora]", str(dias_demora))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[deuda_vencida_soles]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[deuda_vencida_soles]", str(deuda_vencida_soles))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[deuda_vencida_texto]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[deuda_vencida_texto]", str(deuda_vencida_texto))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[analista]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[analista]", str(analista))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[correo_analista]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[correo_analista]", str(correo_analista))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[dias_demora_2]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[dias_demora_2]", str(dias_demora_2))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(8)
-            if "[razon_social_2]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[razon_social_2]", str(razon_social_2))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(8)
-                run.bold = True
+            for key, attributes in replacements.items():
+                if key in paragraph.text:
+                    paragraph.text = paragraph.text.replace(key, attributes["value"])
+                    run = paragraph.runs[0]
+                    run.font.name = 'Arial'
+                    run.font.size = Pt(attributes["font_size"])
+                    run.bold = attributes.get("bold", False)
         
         guardar_documentos(doc, razon_social)
 
@@ -197,84 +161,32 @@ def main():
         
         #word_file = "MODELO_1.docx"
         doc = Document(modelo_1)
+        replacements = {
+            "[fecha_hoy]": {"value": str(fecha_hoy), "font_size": 11},
+            "[razon_social]": {"value": str(razon_social), "font_size": 11, "bold": True},
+            "[direccion_legal]": {"value": str(direccion_legal), "font_size": 11},
+            "[distrito]": {"value": str(distrito), "font_size": 11},
+            "[provincia]": {"value": str(provincia), "font_size": 11},
+            "[departamento]": {"value": str(departamento), "font_size": 11},
+            "[dias_demora]": {"value": str(dias_demora), "font_size": 11},
+            "[deuda_vencida_soles]": {"value": str(deuda_vencida_soles), "font_size": 11},
+            "[deuda_vencida_texto]": {"value": str(deuda_vencida_texto), "font_size": 11},
+            "[deuda_por_vencer_soles]": {"value": str(deuda_por_vencer_soles), "font_size": 11},
+            "[deuda_por_vencer_texto]": {"value": str(deuda_por_vencer_texto), "font_size": 11},
+            "[analista]": {"value": str(analista), "font_size": 11},
+            "[correo_analista]": {"value": str(correo_analista), "font_size": 11},
+            "[dias_demora_2]": {"value": str(dias_demora_2), "font_size": 8},
+            "[razon_social_2]": {"value": str(razon_social_2), "font_size": 8, "bold": True},
+        }
+        
         for paragraph in doc.paragraphs:
-            if "[fecha_hoy]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[fecha_hoy]", str(fecha_hoy))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[razon_social]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[razon_social]", str(razon_social))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-                run.bold = True
-            if "[direccion_legal]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[direccion_legal]", str(direccion_legal))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[distrito]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[distrito]", str(distrito))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[provincia]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[provincia]", str(provincia))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[departamento]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[departamento]", str(departamento))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[dias_demora]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[dias_demora]", str(dias_demora))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[deuda_vencida_soles]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[deuda_vencida_soles]", str(deuda_vencida_soles))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[deuda_vencida_texto]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[deuda_vencida_texto]", str(deuda_vencida_texto))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[deuda_por_vencer_soles]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[deuda_por_vencer_soles]", str(deuda_por_vencer_soles))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[deuda_por_vencer_texto]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[deuda_por_vencer_texto]", str(deuda_por_vencer_texto))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[analista]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[analista]", str(analista))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[correo_analista]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[correo_analista]", str(correo_analista))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(11)
-            if "[dias_demora_2]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[dias_demora_2]", str(dias_demora_2))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(8)
-            if "[razon_social_2]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[razon_social_2]", str(razon_social_2))
-                run = paragraph.runs[0]
-                run.font.name = 'Arial'
-                run.font.size = Pt(8)
-                run.bold = True
+            for key, attributes in replacements.items():
+                if key in paragraph.text:
+                    paragraph.text = paragraph.text.replace(key, attributes["value"])
+                    run = paragraph.runs[0]
+                    run.font.name = 'Arial'
+                    run.font.size = Pt(attributes["font_size"])
+                    run.bold = attributes.get("bold", False)
         
         guardar_documentos(doc, razon_social)
 
@@ -327,6 +239,8 @@ def main():
             texto += " y " + unidades[num]
         return texto.strip()
     
+    global analistas_validados, modelo_1, modelo_2
+    
     unidades = [
         "", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"]
     diez_a_diecinueve = [
@@ -345,6 +259,9 @@ def main():
         "", "mil", "dos mil", "tres mil", "cuatro mil", "cinco mil", 
         "seis mil", "siete mil", "ocho mil", "nueve mil"]
 
+    analistas_validados = [
+        "WALTER LOPEZ", "YOLANDA OLIVA", "JUAN CARLOS HUATAY", 
+        "RAQUEL CAYETANO", "JOSE LUIS VALVERDE", "DIEGO RODRIGUEZ"]
     correos_analistas = {
         "Walter Lopez" : "wlopez@claro.com.pe",
         "Yolanda Oliva" : "yolanda.oliva@claro.com.pe",
@@ -373,7 +290,6 @@ def main():
     print("Fecha hoy: ", fecha_hoy,"\n")
 
     ########## RUTAS ##########
-    global modelo_1, modelo_2
     base = "BASE.xlsx"
     dac_cdr = "./FUENTES/BASE DAC Y CDR ac.xlsx" #"Z:/Base Datos Contratos/base actualizada DAC Y CDR/"
     dac_x_analista = "./FUENTES/Nuevo_DACxANALISTA.xlsx" #"Z:/JEFATURA CCD/"
@@ -388,4 +304,9 @@ def main():
     
     generar_cartas_requerimiento_pago(df_base, df_cruce)
 
-main()
+if __name__ == "__main__":
+    start = time.time()
+    main()
+    end = time.time()
+    tiempo_promedio = end - start
+    print(f"Tiempo ejecución: {tiempo_promedio} segundos.")
