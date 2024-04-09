@@ -93,40 +93,76 @@ def main():
         
         df_cuenta.to_excel("./FINAL/"+razon_social+".xlsx", index=False) # Sin deudas por vencer
         
-        word_file = "MODELO_2.docx"
-        doc = Document(word_file)
+        #word_file = "MODELO_2.docx"
+        doc = Document(modelo_2)
         for paragraph in doc.paragraphs:
             if "[fecha_hoy]" in paragraph.text:
                 paragraph.text = paragraph.text.replace("[fecha_hoy]", str(fecha_hoy))
-            if "[razon_social]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[razon_social]", str(razon_social))
-            if "[direccion_legal]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[direccion_legal]", str(direccion_legal))
-            if "[distrito]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[distrito]", str(distrito))
-            if "[provincia]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[provincia]", str(provincia))
-            if "[departamento]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[departamento]", str(departamento))
-            if "[dias_demora]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[dias_demora]", str(dias_demora))
-            if "[deuda_vencida_soles]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[deuda_vencida_soles]", str(deuda_vencida_soles))
-            if "[deuda_vencida_texto]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[deuda_vencida_texto]", str(deuda_vencida_texto))
-            if "[analista]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[analista]", str(analista))
-            if "[correo_analista]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[correo_analista]", str(correo_analista))
-            if "[dias_demora_2]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[dias_demora_2]", str(dias_demora_2))
-            if "[razon_social_2]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[razon_social_2]", str(razon_social_2))
-        
-        for paragraph in doc.paragraphs:
-            for run in paragraph.runs:
+                run = paragraph.runs[0]
                 run.font.name = 'Arial'
                 run.font.size = Pt(11)
+            if "[razon_social]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[razon_social]", str(razon_social))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+                run.bold = True
+            if "[direccion_legal]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[direccion_legal]", str(direccion_legal))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[distrito]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[distrito]", str(distrito))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[provincia]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[provincia]", str(provincia))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[departamento]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[departamento]", str(departamento))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[dias_demora]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[dias_demora]", str(dias_demora))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[deuda_vencida_soles]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[deuda_vencida_soles]", str(deuda_vencida_soles))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[deuda_vencida_texto]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[deuda_vencida_texto]", str(deuda_vencida_texto))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[analista]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[analista]", str(analista))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[correo_analista]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[correo_analista]", str(correo_analista))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[dias_demora_2]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[dias_demora_2]", str(dias_demora_2))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(8)
+            if "[razon_social_2]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[razon_social_2]", str(razon_social_2))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(8)
+                run.bold = True
         
         guardar_documentos(doc, razon_social)
 
@@ -159,44 +195,86 @@ def main():
         
         df_cuenta.to_excel("./FINAL/"+razon_social+".xlsx", index=False) # Con deudas por vencer
         
-        word_file = "MODELO_1.docx"
-        doc = Document(word_file)
+        #word_file = "MODELO_1.docx"
+        doc = Document(modelo_1)
         for paragraph in doc.paragraphs:
             if "[fecha_hoy]" in paragraph.text:
                 paragraph.text = paragraph.text.replace("[fecha_hoy]", str(fecha_hoy))
-            if "[razon_social]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[razon_social]", str(razon_social))
-            if "[direccion_legal]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[direccion_legal]", str(direccion_legal))
-            if "[distrito]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[distrito]", str(distrito))
-            if "[provincia]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[provincia]", str(provincia))
-            if "[departamento]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[departamento]", str(departamento))
-            if "[dias_demora]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[dias_demora]", str(dias_demora))
-            if "[deuda_vencida_soles]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[deuda_vencida_soles]", str(deuda_vencida_soles))
-            if "[deuda_vencida_texto]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[deuda_vencida_texto]", str(deuda_vencida_texto))
-            if "[deuda_por_vencer_soles]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[deuda_por_vencer_soles]", str(deuda_por_vencer_soles))
-            if "[deuda_por_vencer_texto]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[deuda_por_vencer_texto]", str(deuda_por_vencer_texto))
-            if "[analista]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[analista]", str(analista))
-            if "[correo_analista]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[correo_analista]", str(correo_analista))
-            if "[dias_demora_2]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[dias_demora_2]", str(dias_demora_2))
-            if "[razon_social_2]" in paragraph.text:
-                paragraph.text = paragraph.text.replace("[razon_social_2]", str(razon_social_2))
-        
-        for paragraph in doc.paragraphs:
-            for run in paragraph.runs:
+                run = paragraph.runs[0]
                 run.font.name = 'Arial'
                 run.font.size = Pt(11)
+            if "[razon_social]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[razon_social]", str(razon_social))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+                run.bold = True
+            if "[direccion_legal]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[direccion_legal]", str(direccion_legal))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[distrito]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[distrito]", str(distrito))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[provincia]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[provincia]", str(provincia))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[departamento]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[departamento]", str(departamento))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[dias_demora]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[dias_demora]", str(dias_demora))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[deuda_vencida_soles]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[deuda_vencida_soles]", str(deuda_vencida_soles))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[deuda_vencida_texto]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[deuda_vencida_texto]", str(deuda_vencida_texto))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[deuda_por_vencer_soles]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[deuda_por_vencer_soles]", str(deuda_por_vencer_soles))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[deuda_por_vencer_texto]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[deuda_por_vencer_texto]", str(deuda_por_vencer_texto))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[analista]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[analista]", str(analista))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[correo_analista]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[correo_analista]", str(correo_analista))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(11)
+            if "[dias_demora_2]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[dias_demora_2]", str(dias_demora_2))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(8)
+            if "[razon_social_2]" in paragraph.text:
+                paragraph.text = paragraph.text.replace("[razon_social_2]", str(razon_social_2))
+                run = paragraph.runs[0]
+                run.font.name = 'Arial'
+                run.font.size = Pt(8)
+                run.bold = True
         
         guardar_documentos(doc, razon_social)
 
@@ -295,6 +373,7 @@ def main():
     print("Fecha hoy: ", fecha_hoy,"\n")
 
     ########## RUTAS ##########
+    global modelo_1, modelo_2
     base = "BASE.xlsx"
     dac_cdr = "./FUENTES/BASE DAC Y CDR ac.xlsx" #"Z:/Base Datos Contratos/base actualizada DAC Y CDR/"
     dac_x_analista = "./FUENTES/Nuevo_DACxANALISTA.xlsx" #"Z:/JEFATURA CCD/"
