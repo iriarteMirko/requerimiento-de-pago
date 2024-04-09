@@ -91,7 +91,7 @@ def main():
         dias_demora_2 = dias_demora
         razon_social_2 = razon_social
         
-        df_cuenta.to_excel("./FINAL/"+razon_social.upper()+".xlsx", index=False) # Sin deudas por vencer
+        df_cuenta.to_excel("./FINAL/"+razon_social+".xlsx", index=False) # Sin deudas por vencer
         
         word_file = "MODELO_2.docx"
         doc = Document(word_file)
@@ -157,7 +157,7 @@ def main():
         dias_demora_2 = dias_demora
         razon_social_2 = razon_social
         
-        df_cuenta.to_excel("./FINAL/"+razon_social.upper()+".xlsx", index=False) # Con deudas por vencer
+        df_cuenta.to_excel("./FINAL/"+razon_social+".xlsx", index=False) # Con deudas por vencer
         
         word_file = "MODELO_1.docx"
         doc = Document(word_file)
