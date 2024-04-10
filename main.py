@@ -1,6 +1,5 @@
 from docx import Document
 from docx.shared import Pt
-from docx.shared import Inches
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Font, numbers
 from openpyxl.utils import get_column_letter
 from datetime import datetime
