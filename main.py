@@ -134,7 +134,7 @@ def main():
         deuda_vencida = round(df_cuenta["Importe"].sum(),2)
         parte_entera_deuda_vencida, parte_decimal_deuda_vencida = separar_entero_decimal(deuda_vencida)
         deuda_vencida_soles = f"S/ {parte_entera_deuda_vencida}.{parte_decimal_deuda_vencida}"
-        parte_entera_deuda_vencida_a_texto = convertir_entero_a_texto(int(parte_entera_deuda_vencida))
+        parte_entera_deuda_vencida_a_texto = numero_entero_a_texto(int(parte_entera_deuda_vencida))
         deuda_vencida_texto = f"({parte_entera_deuda_vencida_a_texto} con {parte_decimal_deuda_vencida}/100 soles)"
         
         analista_mayuscula = df_cruce[df_cruce["Deudor"]==cuenta]["ANALISTA_ACT"].iloc[0]
@@ -186,13 +186,13 @@ def main():
         deuda_vencida = round(df_cuenta[df_cuenta["Demora"] >= 0]["Importe"].sum(),2)
         parte_entera_deuda_vencida, parte_decimal_deuda_vencida = separar_entero_decimal(deuda_vencida)
         deuda_vencida_soles = f"S/ {parte_entera_deuda_vencida}.{parte_decimal_deuda_vencida}"
-        parte_entera_deuda_vencida_a_texto = convertir_entero_a_texto(int(parte_entera_deuda_vencida))
+        parte_entera_deuda_vencida_a_texto = numero_entero_a_texto(int(parte_entera_deuda_vencida))
         deuda_vencida_texto = f"({parte_entera_deuda_vencida_a_texto} con {parte_decimal_deuda_vencida}/100 soles)"
         
         deuda_por_vencer = round(df_cuenta[df_cuenta["Demora"] < 0]["Importe"].sum(),2)
         parte_entera_deuda_por_vencer, parte_decimal_deuda_por_vencer = separar_entero_decimal(deuda_por_vencer)
         deuda_por_vencer_soles = f"S/ {parte_entera_deuda_por_vencer}.{parte_decimal_deuda_por_vencer}"
-        parte_entera_deuda_por_vencer_a_texto = convertir_entero_a_texto(int(parte_entera_deuda_por_vencer))
+        parte_entera_deuda_por_vencer_a_texto = numero_entero_a_texto(int(parte_entera_deuda_por_vencer))
         deuda_por_vencer_texto = f"({parte_entera_deuda_por_vencer_a_texto} con {parte_decimal_deuda_por_vencer}/100 soles)"
         
         analista_mayuscula = df_cruce[df_cruce["Deudor"]==cuenta]["ANALISTA_ACT"].iloc[0]
@@ -204,8 +204,6 @@ def main():
         
         df_cuenta.to_excel("./FINAL/"+razon_social+".xlsx", index=False) # Con deudas por vencer
         formatear_excel(razon_social)
-        
-        imagen = ""
         
         doc = Document(modelo_1)
         replacements = {
@@ -234,9 +232,6 @@ def main():
                     run.font.name = 'Arial'
                     run.font.size = Pt(attributes["font_size"])
                     run.bold = attributes.get("bold", False)
-                    #if key == "[imagen]":
-                        #run.add_picture(imagen, width=Inches(6))
-                        #run.text = ""
         
         guardar_documentos(doc, razon_social)
 
@@ -266,25 +261,31 @@ def main():
         
         return parte_entera, parte_decimal
 
-    def convertir_entero_a_texto(num):
+    def numero_entero_a_texto(num):
         if num == 0:
             return "cero"
+        grupos = []
+        while num > 0:
+            grupos.append(num % 1000)
+            num //= 1000
+        textos = [convertir_grupo_a_texto(grupo) for grupo in grupos]
+        if len(textos) > 1:
+            textos[1] += " mil"
+        if len(textos) > 2:
+            textos[2] = "un millón" if textos[2] == "uno" else textos[2] + " millones"
+        return " ".join(textos[::-1]).strip()
+
+    def convertir_grupo_a_texto(num):
         texto = ""
-        if num >= 1000:
-            texto += miles[int(str(num)[0])]
-            num %= 1000
         if num >= 100:
-            texto += " " + centenas[int(str(num)[0])]
+            texto += centenas[num // 100]
             num %= 100
-        if num >= 10:
-            if num < 30 and num > 20:
-                texto += " " + veintiuno_a_veintinueve[num-20]
-                return texto
-            if num < 20 and num >10:
-                texto += " " + diez_a_diecinueve[num-10]
-                return texto
-            texto += " " + decenas[int(str(num)[0])]
+        if num >= 20:
+            texto += " " + decenas[num // 10]
             num %= 10
+        elif num >= 10:
+            texto += " " + diez_a_diecinueve[num - 10]
+            num = 0
         if num > 0:
             texto += " y " + unidades[num]
         return texto.strip()
