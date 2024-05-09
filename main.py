@@ -12,7 +12,9 @@ import openpyxl
 import warnings
 import time
 
+
 warnings.filterwarnings("ignore")
+
 
 class GenerarCartas():
     def __init__(self):
@@ -130,7 +132,7 @@ class GenerarCartas():
                 self.generar_cartas_con_deudaxvencer(cuenta)
     
     def generar_excel(self, razon_social):
-        wb = openpyxl.load_workbook("./resultados/"+razon_social+".xlsx")
+        wb = openpyxl.load_workbook(resource_path("./results/"+razon_social+".xlsx"))
         ws = wb.active
         
         fill = PatternFill(start_color="16365C", end_color="16365C", fill_type="solid")
@@ -166,7 +168,7 @@ class GenerarCartas():
         cell_sum.font = Font(name="Arial", size=10, bold=True)
         cell_sum.border = border
         
-        wb.save("./resultados/"+razon_social+".xlsx")
+        wb.save(resource_path("./results/"+razon_social+".xlsx"))
     
     def generar_cartas_sin_deudaxvencer(self, cuenta):
         razon_social = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["NOMBRE DAC"].iloc[0].upper()
@@ -189,7 +191,7 @@ class GenerarCartas():
         dias_demora_2 = dias_demora
         razon_social_2 = razon_social
         
-        self.df_cuenta.to_excel("./resultados/"+razon_social+".xlsx", index=False) # Sin deudas por vencer
+        self.df_cuenta.to_excel(resource_path("./results/"+razon_social+".xlsx"), index=False) # Sin deudas por vencer
         self.generar_excel(razon_social)
         
         doc = Document(self.modelo_2)
@@ -218,7 +220,7 @@ class GenerarCartas():
                     run.font.size = Pt(attributes["font_size"])
                     run.bold = attributes.get("bold", False)
         
-        ruta_doc = "./resultados/"+razon_social+".docx"
+        ruta_doc = resource_path("./results/"+razon_social+".docx")
         doc.save(ruta_doc)
 
     def generar_cartas_con_deudaxvencer(self, cuenta):
@@ -248,7 +250,7 @@ class GenerarCartas():
         dias_demora_2 = dias_demora
         razon_social_2 = razon_social
         
-        self.df_cuenta.to_excel("./resultados/"+razon_social+".xlsx", index=False) # Con deudas por vencer
+        self.df_cuenta.to_excel(resource_path("./results/"+razon_social+".xlsx"), index=False) # Con deudas por vencer
         self.generar_excel(razon_social)
         
         doc = Document(self.modelo_1)
@@ -279,7 +281,7 @@ class GenerarCartas():
                     run.font.size = Pt(attributes["font_size"])
                     run.bold = attributes.get("bold", False)
         
-        ruta_doc = "./resultados/"+razon_social+".docx"
+        ruta_doc = resource_path("./results/"+razon_social+".docx")
         doc.save(ruta_doc)
 
     def separar_entero_decimal(self, numero):
@@ -327,11 +329,61 @@ class GenerarCartas():
         return texto.strip()
     
     def crear_app(self):
-        self.generar_cartas_requerimiento_pago()
+        self.app = CTk()
+        self.app.title("Generador de Cartas")
+        icon_path = resource_path("./icono.ico")
+        if os.path.isfile(icon_path):
+            self.app.iconbitmap(icon_path)
+        else:
+            messagebox.showwarning("ADVERTENCIA", "No se encontró el archivo 'icono.ico' en la ruta: " + icon_path)
+        self.app.resizable(False, False)
+        set_appearance_mode("light")
+        
+        main_frame = CTkFrame(self.app)
+        main_frame.pack_propagate("True")
+        main_frame.pack(fill="both", expand=True)
+        
+        frame_base = CTkFrame(main_frame)
+        frame_base.grid(row=0, column=0, padx=(20, 10), pady=(20, 0), sticky="nsew")
+        
+        ruta_base = CTkLabel(frame_base, text="Ruta BASE", font=("Calibri",17,"bold"))
+        ruta_base.pack(padx=(20, 20), pady=(5, 0), fill="both", expand=True, anchor="center", side="top")
+        self.boton_base = CTkButton(frame_base, text="Seleccionar", font=("Calibri",17), text_color="black",
+                                fg_color="transparent", border_color="#d11515", border_width=3, hover_color="#d11515", 
+                                width=25, corner_radius=25)
+        self.boton_base.pack(padx=(20, 20), pady=(0, 15), fill="both", anchor="center", side="bottom")
+        
+        frame_dacx = CTkFrame(main_frame)
+        frame_dacx.grid(row=0, column=1, padx=(10, 20), pady=(20, 0), sticky="nsew")
+        
+        ruta_dacxa = CTkLabel(frame_dacx, text="Ruta DACxAnalista", font=("Calibri",17,"bold"))
+        ruta_dacxa.pack(padx=(20, 20), pady=(5, 0), fill="both", expand=True, anchor="center", side="top")
+        self.boton_dacx = CTkButton(frame_dacx, text="Seleccionar", font=("Calibri",17), text_color="black",
+                                fg_color="transparent", border_color="#d11515", border_width=3, hover_color="#d11515", 
+                                width=25, corner_radius=25)
+        self.boton_dacx.pack(padx=(20, 20), pady=(0, 15), fill="both", anchor="center", side="bottom")
+        
+        
+        
+        
+        
+        self.boton_ejecutar = CTkButton(main_frame, text="GENERAR CARTAS", text_color="black", font=("Calibri",25,"bold"), 
+                                    border_color="black", border_width=3, fg_color="gray", 
+                                    hover_color="red", command=lambda: self.generar_cartas_requerimiento_pago())
+        self.boton_ejecutar.grid(row=4, column=0, columnspan=2, ipady=20, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        
+        self.progressbar = CTkProgressBar(main_frame, mode="indeterminate", orientation="horizontal", 
+                                        progress_color="#d11515", height=10, border_width=0)
+        self.progressbar.grid(row=5, column=0, columnspan=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
+        
+        self.app.mainloop()
+
+
 
 def main():
     app = GenerarCartas()
     app.crear_app()
+
 
 if __name__ == "__main__":
     start = time.time()
