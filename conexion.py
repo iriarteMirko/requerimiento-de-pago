@@ -5,10 +5,9 @@ def conexionSQLite():
     try:
         conexion = sql.connect(resource_path("database/db.db"))
         return conexion
-
     except sql.Error as ex:
-        print("Error al conectar a la base de datos SQLite:", ex)
-        return None
+        error = "Error al conectar a la base de datos SQLite:", ex
+        return error
 
 def ejecutar_query(query, parametros=None):
     conexion = conexionSQLite()

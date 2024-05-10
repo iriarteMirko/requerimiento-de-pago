@@ -328,6 +328,57 @@ class GenerarCartas():
             texto += " y " + self.unidades[num]
         return texto.strip()
     
+    def seleccionar_dacxanalista(self):
+        archivo_excel = filedialog.askopenfilename(
+            initialdir="/",
+            title="Seleccionar archivo DACxANALISTA",
+            filetypes=(("Archivos de Excel", "*.xlsx"), ("Todos los archivos", "*.*"))
+        )
+        dacxanalista_path = archivo_excel
+        
+        query = ("""UPDATE RUTAS
+                    SET DACXANALISTA == '""" + dacxanalista_path + """'
+                    WHERE ID == 0""")
+        conexion = conexionSQLite()
+        try:
+            cursor = conexion.cursor()
+            cursor.execute(query)
+            conexion.commit()
+        except Exception as ex:
+            messagebox.showerror("Error", str(ex))
+        finally:
+            cursor.close()
+            conexion.close
+    
+    def seleccionar_base_dac_cdr(self):
+        archivo_excel = filedialog.askopenfilename(
+            initialdir="/",
+            title="Seleccionar archivo BASE DAC y CDR",
+            filetypes=(("Archivos de Excel", "*.xlsx"), ("Todos los archivos", "*.*"))
+        )
+        directorio_base = os.path.dirname(archivo_excel)
+        base_path = archivo_excel
+        resultado_path = directorio_base+"/DEUDAS_VENCIDAS.xlsx"
+        
+        query1 = ("""UPDATE RUTAS
+                    SET BASE == '""" + base_path + """'
+                    WHERE ID == 0""")
+        query2 = ("""UPDATE RUTAS
+                    SET RESULTADO == '""" + resultado_path + """'
+                    WHERE ID == 0""")
+        conexion = conexionSQLite()
+        try:
+            cursor = conexion.cursor()
+            cursor.execute(query1)
+            conexion.commit()
+            cursor.execute(query2)
+            conexion.commit()
+        except Exception as ex:
+            messagebox.showerror("Error", str(ex))
+        finally:
+            cursor.close()
+            conexion.close
+    
     def crear_app(self):
         self.app = CTk()
         self.app.title("Generador de Cartas")
@@ -337,7 +388,7 @@ class GenerarCartas():
         else:
             messagebox.showwarning("ADVERTENCIA", "No se encontró el archivo 'icono.ico' en la ruta: " + icon_path)
         self.app.resizable(False, False)
-        set_appearance_mode("light")
+        set_appearance_mode("dark")
         
         main_frame = CTkFrame(self.app)
         main_frame.pack_propagate("True")
@@ -346,35 +397,35 @@ class GenerarCartas():
         frame_base = CTkFrame(main_frame)
         frame_base.grid(row=0, column=0, padx=(20, 10), pady=(20, 0), sticky="nsew")
         
-        ruta_base = CTkLabel(frame_base, text="Ruta BASE", font=("Calibri",17,"bold"))
-        ruta_base.pack(padx=(20, 20), pady=(5, 0), fill="both", expand=True, anchor="center", side="top")
-        self.boton_base = CTkButton(frame_base, text="Seleccionar", font=("Calibri",17), text_color="black",
-                                fg_color="transparent", border_color="#d11515", border_width=3, hover_color="#d11515", 
+        ruta_dacxa = CTkLabel(frame_base, text="Ruta DACxAnalista", font=("Calibri",15))
+        ruta_dacxa.pack(padx=(20, 20), pady=(5, 0), fill="both", expand=True, anchor="center", side="top")
+        self.boton_dacx = CTkButton(frame_base, text="Seleccionar", font=("Calibri",15), text_color="white",
+                                fg_color="transparent", border_color="#d11515", border_width=2, hover_color="#d11515", 
                                 width=25, corner_radius=25)
-        self.boton_base.pack(padx=(20, 20), pady=(0, 15), fill="both", anchor="center", side="bottom")
+        self.boton_dacx.pack(padx=(20, 20), pady=(0, 15), fill="both", anchor="center", side="bottom")
         
         frame_dacx = CTkFrame(main_frame)
         frame_dacx.grid(row=0, column=1, padx=(10, 20), pady=(20, 0), sticky="nsew")
         
-        ruta_dacxa = CTkLabel(frame_dacx, text="Ruta DACxAnalista", font=("Calibri",17,"bold"))
-        ruta_dacxa.pack(padx=(20, 20), pady=(5, 0), fill="both", expand=True, anchor="center", side="top")
-        self.boton_dacx = CTkButton(frame_dacx, text="Seleccionar", font=("Calibri",17), text_color="black",
-                                fg_color="transparent", border_color="#d11515", border_width=3, hover_color="#d11515", 
+        ruta_daccdr = CTkLabel(frame_dacx, text="Ruta DAC y CDR", font=("Calibri",15))
+        ruta_daccdr.pack(padx=(20, 20), pady=(5, 0), fill="both", expand=True, anchor="center", side="top")
+        self.boton_daccdr = CTkButton(frame_dacx, text="Seleccionar", font=("Calibri",15), text_color="white",
+                                fg_color="transparent", border_color="#d11515", border_width=2, hover_color="#d11515", 
                                 width=25, corner_radius=25)
-        self.boton_dacx.pack(padx=(20, 20), pady=(0, 15), fill="both", anchor="center", side="bottom")
+        self.boton_daccdr.pack(padx=(20, 20), pady=(0, 15), fill="both", anchor="center", side="bottom")
         
-        
-        
-        
-        
-        self.boton_ejecutar = CTkButton(main_frame, text="GENERAR CARTAS", text_color="black", font=("Calibri",25,"bold"), 
+        self.boton_ejecutar = CTkButton(main_frame, text="GENERAR CARTAS", text_color="black", font=("Calibri",20,"bold"), 
                                     border_color="black", border_width=3, fg_color="gray", 
                                     hover_color="red", command=lambda: self.generar_cartas_requerimiento_pago())
-        self.boton_ejecutar.grid(row=4, column=0, columnspan=2, ipady=20, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        self.boton_ejecutar.grid(row=1, column=0, columnspan=2, ipady=20, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        
+        self.cuadro = CTkTextbox(main_frame, font=("Calibri",15), height=50, border_color="black", border_width=2)
+        self.cuadro.grid(row=2, column=0, columnspan=2, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        self.cuadro.configure(state="disabled")
         
         self.progressbar = CTkProgressBar(main_frame, mode="indeterminate", orientation="horizontal", 
                                         progress_color="#d11515", height=10, border_width=0)
-        self.progressbar.grid(row=5, column=0, columnspan=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
+        self.progressbar.grid(row=3, column=0, columnspan=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
         
         self.app.mainloop()
 
