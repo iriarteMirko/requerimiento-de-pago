@@ -5,7 +5,8 @@ from openpyxl.utils import get_column_letter
 from resource_path import resource_path
 from customtkinter import *
 from datetime import datetime
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
+from threading import Thread
 from conexion import *
 import pandas as pd
 import openpyxl
@@ -16,11 +17,9 @@ import time
 warnings.filterwarnings("ignore")
 
 
-class GenerarCartas():
+class Cartas():
     def __init__(self):
         self.base = resource_path("BASE.xlsx")
-        self.dac_cdr = "C:/Users/miria/Desktop/archivos claro/BASE DAC Y CDR ac.xlsx" #"Z:/Base Datos Contratos/base actualizada DAC Y CDR/"
-        self.dac_x_analista = "C:/Users/miria/Desktop/archivos claro/Nuevo_DACxANALISTA.xlsx" #"Z:/JEFATURA CCD/"
         self.modelo_1 = resource_path("./models/MODELO_1.docx")
         self.modelo_2 = resource_path("./models/MODELO_2.docx")
         self.unidades = ["", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"]
@@ -57,9 +56,34 @@ class GenerarCartas():
         self.fecha_hoy = f"{dia} de {nombre_mes} de {año}"
         print(f"Fecha hoy: {self.fecha_hoy}\n")
     
+    def deshabilitar_botones(self):
+        self.boton_ejecutar.configure(state="disabled")
+        self.boton_dacx.configure(state="disabled")
+        self.boton_dac_cdr.configure(state="disabled")
+    
+    def habilitar_botones(self):
+        self.boton_ejecutar.configure(state="normal")
+        self.boton_dacx.configure(state="normal")
+        self.boton_dac_cdr.configure(state="normal")
+    
+    def verificar_thread(self, thread):
+        if thread.is_alive():
+            self.app.after(0, self.verificar_thread, thread)
+        else:
+            self.habilitar_botones()
+    
+    def iniciar_tarea(self, action):
+        self.deshabilitar_botones()
+        if action == 1:
+            thread = Thread(target=self.ejecutar)
+        else:
+            return
+        thread.start()
+        self.app.after(0, self.verificar_thread, thread)
+    
     def generar_dataframes(self):
-        df_dac_cdr = pd.read_excel(self.dac_cdr, sheet_name=" CONTRATOS DAC-DACES")
-        df_dac_x_analista = pd.read_excel(self.dac_x_analista, sheet_name="Base_NUEVA")
+        df_dac_cdr = pd.read_excel(self.ruta_dac_cdr, sheet_name=" CONTRATOS DAC-DACES")
+        df_dacxanalista = pd.read_excel(self.ruta_dacxa, sheet_name="Base_NUEVA")
         # BASE #
         df_base = pd.read_excel(self.base, sheet_name="BASE")
         columnas_deseadas_base = ["Cuenta", "Nº documento", "Referencia", "Fecha de documento", "Clase de documento", "Demora tras vencimiento neto", "Moneda del documento", "Importe en moneda local"]
@@ -75,7 +99,7 @@ class GenerarCartas():
         self.registros_base = df_base.shape[0]
         self.df_base = df_base
         # CRUCE #
-        df_cruce = pd.merge(df_dac_cdr, df_dac_x_analista, left_on="Deudor", right_on="DEUDOR", how="left")
+        df_cruce = pd.merge(df_dac_cdr, df_dacxanalista, left_on="Deudor", right_on="DEUDOR", how="left")
         df_cruce.drop(columns=["DEUDOR"], inplace=True)
         df_cruce = df_cruce[df_cruce["ANALISTA_ACT"].notna()]
         columnas_deseadas_cruce = ["Deudor", "NOMBRE DAC", "DIRECCIÓN LEGAL", "DISTRITO", "PROVINCIA", "DPTO.", "ANALISTA_ACT"]
@@ -356,10 +380,10 @@ class GenerarCartas():
             title="Seleccionar archivo Base DAC y CDR",
             filetypes=(("Archivos de Excel", "*.xlsx"), ("Todos los archivos", "*.*"))
         )
-        base_path = archivo_excel
+        dac_cdr_path = archivo_excel
         
         query = ("""UPDATE RUTAS
-                    SET BASE_DAC_CDR == '""" + base_path + """'
+                    SET BASE_DAC_CDR == '""" + dac_cdr_path + """'
                     WHERE ID == 0""")
         conexion = conexionSQLite()
         try:
@@ -371,6 +395,26 @@ class GenerarCartas():
         finally:
             cursor.close()
             conexion.close
+    
+    def ejecutar(self):
+        self.progressbar.start()
+        query = """SELECT * FROM RUTAS WHERE ID == 0"""
+        try:
+            datos = ejecutar_query(query)
+            self.ruta_dacxa = datos[0][1]
+            self.ruta_dac_cdr = datos[0][2]
+            if self.ruta_dacxa is None or self.ruta_dac_cdr is None:
+                messagebox.showerror("Error", "Por favor, configure las rutas de los archivos.")
+            elif not os.path.exists(self.ruta_dacxa):
+                messagebox.showerror("Error", "No se encontraró el archivo DACxANALISTA en la ruta especificada.")
+            elif not os.path.exists(self.ruta_dac_cdr):
+                messagebox.showerror("Error", "No se encontraró el archivo DAC y CDR en la ruta especificada.")
+            else:
+                self.generar_cartas_requerimiento_pago()
+        except Exception as ex:
+            messagebox.showerror("Error", "Detalle:\n" + str(ex))
+        finally:
+            self.progressbar.stop()
     
     def crear_app(self):
         self.app = CTk()
@@ -402,14 +446,14 @@ class GenerarCartas():
         
         ruta_daccdr = CTkLabel(frame_dacx, text="Ruta DAC y CDR", font=("Calibri",15))
         ruta_daccdr.pack(padx=(20, 20), pady=(5, 0), fill="both", expand=True, anchor="center", side="top")
-        self.boton_daccdr = CTkButton(frame_dacx, text="Seleccionar", font=("Calibri",15), text_color="white",
+        self.boton_dac_cdr = CTkButton(frame_dacx, text="Seleccionar", font=("Calibri",15), text_color="white",
                                 fg_color="transparent", border_color="#d11515", border_width=2, hover_color="#d11515", 
                                 width=25, corner_radius=25, command=lambda: self.seleccionar_base_dac_cdr())
-        self.boton_daccdr.pack(padx=(20, 20), pady=(0, 15), fill="both", anchor="center", side="bottom")
+        self.boton_dac_cdr.pack(padx=(20, 20), pady=(0, 15), fill="both", anchor="center", side="bottom")
         
         self.boton_ejecutar = CTkButton(main_frame, text="GENERAR CARTAS", text_color="black", font=("Calibri",20,"bold"), 
                                     border_color="black", border_width=3, fg_color="gray", 
-                                    hover_color="red", command=lambda: self.generar_cartas_requerimiento_pago())
+                                    hover_color="red", command=lambda: self.iniciar_tarea(1))
         self.boton_ejecutar.grid(row=1, column=0, columnspan=2, ipady=20, padx=(20, 20), pady=(20, 0), sticky="nsew")
         
         self.cuadro = CTkTextbox(main_frame, font=("Calibri",15), height=50, border_color="black", border_width=2)
@@ -425,7 +469,7 @@ class GenerarCartas():
 
 
 def main():
-    app = GenerarCartas()
+    app = Cartas()
     app.crear_app()
 
 
