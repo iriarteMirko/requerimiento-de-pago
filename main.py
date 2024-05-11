@@ -353,25 +353,18 @@ class GenerarCartas():
     def seleccionar_base_dac_cdr(self):
         archivo_excel = filedialog.askopenfilename(
             initialdir="/",
-            title="Seleccionar archivo BASE DAC y CDR",
+            title="Seleccionar archivo Base DAC y CDR",
             filetypes=(("Archivos de Excel", "*.xlsx"), ("Todos los archivos", "*.*"))
         )
-        directorio_base = os.path.dirname(archivo_excel)
         base_path = archivo_excel
-        resultado_path = directorio_base+"/DEUDAS_VENCIDAS.xlsx"
         
-        query1 = ("""UPDATE RUTAS
-                    SET BASE == '""" + base_path + """'
-                    WHERE ID == 0""")
-        query2 = ("""UPDATE RUTAS
-                    SET RESULTADO == '""" + resultado_path + """'
+        query = ("""UPDATE RUTAS
+                    SET BASE_DAC_CDR == '""" + base_path + """'
                     WHERE ID == 0""")
         conexion = conexionSQLite()
         try:
             cursor = conexion.cursor()
-            cursor.execute(query1)
-            conexion.commit()
-            cursor.execute(query2)
+            cursor.execute(query)
             conexion.commit()
         except Exception as ex:
             messagebox.showerror("Error", str(ex))
@@ -401,7 +394,7 @@ class GenerarCartas():
         ruta_dacxa.pack(padx=(20, 20), pady=(5, 0), fill="both", expand=True, anchor="center", side="top")
         self.boton_dacx = CTkButton(frame_base, text="Seleccionar", font=("Calibri",15), text_color="white",
                                 fg_color="transparent", border_color="#d11515", border_width=2, hover_color="#d11515", 
-                                width=25, corner_radius=25)
+                                width=25, corner_radius=25, command=lambda: self.seleccionar_dacxanalista())
         self.boton_dacx.pack(padx=(20, 20), pady=(0, 15), fill="both", anchor="center", side="bottom")
         
         frame_dacx = CTkFrame(main_frame)
@@ -411,7 +404,7 @@ class GenerarCartas():
         ruta_daccdr.pack(padx=(20, 20), pady=(5, 0), fill="both", expand=True, anchor="center", side="top")
         self.boton_daccdr = CTkButton(frame_dacx, text="Seleccionar", font=("Calibri",15), text_color="white",
                                 fg_color="transparent", border_color="#d11515", border_width=2, hover_color="#d11515", 
-                                width=25, corner_radius=25)
+                                width=25, corner_radius=25, command=lambda: self.seleccionar_base_dac_cdr())
         self.boton_daccdr.pack(padx=(20, 20), pady=(0, 15), fill="both", anchor="center", side="bottom")
         
         self.boton_ejecutar = CTkButton(main_frame, text="GENERAR CARTAS", text_color="black", font=("Calibri",20,"bold"), 
