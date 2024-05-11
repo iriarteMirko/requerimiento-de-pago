@@ -1,17 +1,20 @@
+import pandas as pd
+import openpyxl as op
+import warnings
+import time
+
+from customtkinter import *
+from tkinter import messagebox, filedialog
+from datetime import datetime
+from threading import Thread
+
 from docx import Document
 from docx.shared import Pt
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Font, numbers
 from openpyxl.utils import get_column_letter
-from resource_path import resource_path
-from customtkinter import *
-from datetime import datetime
-from tkinter import messagebox, filedialog
-from threading import Thread
-from conexion import *
-import pandas as pd
-import openpyxl
-import warnings
-import time
+
+from src.database.conexion import *
+from src.utils.resource_path import resource_path
 
 
 warnings.filterwarnings("ignore")
@@ -20,8 +23,8 @@ warnings.filterwarnings("ignore")
 class Cartas():
     def __init__(self):
         self.base = resource_path("BASE.xlsx")
-        self.modelo_1 = resource_path("./models/MODELO_1.docx")
-        self.modelo_2 = resource_path("./models/MODELO_2.docx")
+        self.modelo_1 = resource_path("./src/models/MODELO_1.docx")
+        self.modelo_2 = resource_path("./src/models/MODELO_2.docx")
         self.unidades = ["", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"]
         self.diez_a_diecinueve = ["diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho", "diecinueve"]
         self.veintiuno_a_veintinueve = ["", "veintiuno", "veintidos", "veintitres", "veinticuatro", "veinticinco", "veintiseis", "veintisiete", "veintiocho", "veintinueve"]
@@ -68,7 +71,7 @@ class Cartas():
     
     def verificar_thread(self, thread):
         if thread.is_alive():
-            self.app.after(0, self.verificar_thread, thread)
+            self.app.after(1000, self.verificar_thread, thread)
         else:
             self.habilitar_botones()
     
@@ -79,7 +82,7 @@ class Cartas():
         else:
             return
         thread.start()
-        self.app.after(0, self.verificar_thread, thread)
+        self.app.after(1000, self.verificar_thread, thread)
     
     def generar_dataframes(self):
         df_dac_cdr = pd.read_excel(self.ruta_dac_cdr, sheet_name=" CONTRATOS DAC-DACES")
@@ -156,7 +159,7 @@ class Cartas():
                 self.generar_cartas_con_deudaxvencer(cuenta)
     
     def generar_excel(self, razon_social):
-        wb = openpyxl.load_workbook(resource_path("./results/"+razon_social+".xlsx"))
+        wb = op.load_workbook(resource_path("./results/"+razon_social+".xlsx"))
         ws = wb.active
         
         fill = PatternFill(start_color="16365C", end_color="16365C", fill_type="solid")
