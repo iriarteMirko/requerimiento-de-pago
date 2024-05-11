@@ -14,6 +14,7 @@ from openpyxl.styles import PatternFill, Border, Side, Alignment, Font, numbers
 from openpyxl.utils import get_column_letter
 
 from src.database.conexion import *
+from src.models.dataframes import generar_dataframes
 from src.utils.resource_path import resource_path
 
 
@@ -23,8 +24,8 @@ warnings.filterwarnings("ignore")
 class Cartas():
     def __init__(self):
         self.base = resource_path("BASE.xlsx")
-        self.modelo_1 = resource_path("./src/models/MODELO_1.docx")
-        self.modelo_2 = resource_path("./src/models/MODELO_2.docx")
+        self.modelo_1 = resource_path("./modelos/MODELO_1.docx")
+        self.modelo_2 = resource_path("./modelos/MODELO_2.docx")
         self.unidades = ["", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"]
         self.diez_a_diecinueve = ["diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho", "diecinueve"]
         self.veintiuno_a_veintinueve = ["", "veintiuno", "veintidos", "veintitres", "veinticuatro", "veinticinco", "veintiseis", "veintisiete", "veintiocho", "veintinueve"]
@@ -84,36 +85,6 @@ class Cartas():
         thread.start()
         self.app.after(1000, self.verificar_thread, thread)
     
-    def generar_dataframes(self):
-        df_dac_cdr = pd.read_excel(self.ruta_dac_cdr, sheet_name=" CONTRATOS DAC-DACES")
-        df_dacxanalista = pd.read_excel(self.ruta_dacxa, sheet_name="Base_NUEVA")
-        # BASE #
-        df_base = pd.read_excel(self.base, sheet_name="BASE")
-        columnas_deseadas_base = ["Cuenta", "Nº documento", "Referencia", "Fecha de documento", "Clase de documento", "Demora tras vencimiento neto", "Moneda del documento", "Importe en moneda local"]
-        nuevas_columnas_base = ["Fecha de doc.", "CL", "Demora", "Moneda", "Importe"]
-        df_base = df_base[columnas_deseadas_base]
-        df_base = df_base[df_base["Cuenta"].notna()]
-        nombres_columnas = dict(zip(columnas_deseadas_base[3:], nuevas_columnas_base))
-        df_base = df_base.rename(columns=nombres_columnas)
-        df_base["Cuenta"] = df_base["Cuenta"].astype("Int64").astype("str")
-        df_base["Nº documento"] = df_base["Nº documento"].astype("Int64").astype("str")
-        df_base["Demora"] = df_base["Demora"].astype("Int64")
-        df_base.sort_values(by=["Cuenta","Demora"], ascending=[True, False], inplace=True)
-        self.registros_base = df_base.shape[0]
-        self.df_base = df_base
-        # CRUCE #
-        df_cruce = pd.merge(df_dac_cdr, df_dacxanalista, left_on="Deudor", right_on="DEUDOR", how="left")
-        df_cruce.drop(columns=["DEUDOR"], inplace=True)
-        df_cruce = df_cruce[df_cruce["ANALISTA_ACT"].notna()]
-        columnas_deseadas_cruce = ["Deudor", "NOMBRE DAC", "DIRECCIÓN LEGAL", "DISTRITO", "PROVINCIA", "DPTO.", "ANALISTA_ACT"]
-        analistas_no_deseados = ["REGION NORTE", "REGION SUR", "SIN INFORMACION"]
-        df_cruce = df_cruce[columnas_deseadas_cruce]
-        df_cruce = df_cruce[df_cruce["Deudor"].notna()]
-        df_cruce["Deudor"] = df_cruce["Deudor"].astype("Int64").astype("str")
-        df_cruce = df_cruce.loc[~df_cruce["ANALISTA_ACT"].isin(analistas_no_deseados)]
-        self.cuentas_validadas = df_cruce["Deudor"].to_list()
-        self.df_cruce = df_cruce
-    
     def validar_cuentas(self):
         cuentas = self.df_base["Cuenta"].drop_duplicates().to_list()
         print(f"Deudores: [{cuentas}]\n")
@@ -121,7 +92,7 @@ class Cartas():
         cuentas_copia = cuentas.copy()
         
         for cuenta in cuentas_copia:
-            if cuenta not in self.cuentas_validadas:
+            if cuenta not in self.df_cruce["Deudor"].to_list():
                 cuentas.remove(cuenta)
                 cuentas_no_encontradas.append(cuenta)        
         
@@ -145,8 +116,11 @@ class Cartas():
             print("Analistas no validados: ",analistas_no_validados,"\n")
     
     def generar_cartas_requerimiento_pago(self):
-        self.generar_dataframes()
-        print(f"Registros Base: [{self.registros_base}]\n")
+        dataframes = generar_dataframes(self.base, self.ruta_dacxa, self.ruta_dac_cdr)
+        self.df_base = dataframes[0]
+        self.df_cruce = dataframes[1]
+        
+        print(f"Registros Base: [{self.df_base.shape[0]}]\n")
         
         self.validar_cuentas()
         self.validar_analistas()
@@ -404,6 +378,7 @@ class Cartas():
         query = """SELECT * FROM RUTAS WHERE ID == 0"""
         try:
             datos = ejecutar_query(query)
+            print("hola", datos)
             self.ruta_dacxa = datos[0][1]
             self.ruta_dac_cdr = datos[0][2]
             if self.ruta_dacxa is None or self.ruta_dac_cdr is None:
@@ -422,7 +397,7 @@ class Cartas():
     def crear_app(self):
         self.app = CTk()
         self.app.title("Generador de Cartas")
-        icon_path = resource_path("./icono.ico")
+        icon_path = resource_path("./src/images/icono.ico")
         if os.path.isfile(icon_path):
             self.app.iconbitmap(icon_path)
         else:

@@ -3,20 +3,17 @@ import sqlite3 as sql
 
 def conexionSQLite():
     try:
-        conexion = sql.connect(resource_path("db.db"))
+        conexion = sql.connect(resource_path("../database/db.db"))
         return conexion
     except sql.Error as ex:
         error = "Error al conectar a la base de datos SQLite:" + str(ex)
         return error
 
-def ejecutar_query(query, parametros=None):
+def ejecutar_query(query):
     conexion = conexionSQLite()
     try:
         cursor = conexion.cursor()
-        if parametros is None:
-            cursor.execute(query)
-        else:
-            cursor.execute(query, parametros)
+        cursor.execute(query)
         resultados = cursor.fetchall()
         return resultados
     except sql.Error as ex:
