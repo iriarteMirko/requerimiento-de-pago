@@ -7,7 +7,7 @@ from datetime import datetime
 from threading import Thread
 
 from src.database.conexion import *
-from src.models.dataframes import generar_dataframes
+from src.models.generar_dataframes import generar_dataframes
 from src.models.generar_doc import generar_doc
 from src.models.generar_excel import generar_excel
 
