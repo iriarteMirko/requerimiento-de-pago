@@ -1,3 +1,6 @@
+from ..utils.variables import analistas_validados
+
+
 def validar_cuentas(cuentas_base, cuentas_cruce):
         print(f"Deudores: {cuentas_base}\n")
         cuentas_no_encontradas = []
@@ -15,7 +18,7 @@ def validar_cuentas(cuentas_base, cuentas_cruce):
         
         return cuentas_base
     
-def validar_analistas(analistas, analistas_validados):
+def validar_analistas(analistas):
     analistas_no_validados = []
     for analista in analistas:
         if analista not in analistas_validados:

@@ -19,37 +19,12 @@ warnings.filterwarnings("ignore")
 
 class Cartas():
     def __init__(self):
-        self.base = resource_path("BASE.xlsx")
-        self.modelo_1 = resource_path("./modelos/MODELO_1.docx")
-        self.modelo_2 = resource_path("./modelos/MODELO_2.docx")
-        self.analistas_validados = ["WALTER LOPEZ", "YOLANDA OLIVA", "JUAN CARLOS HUATAY", "RAQUEL CAYETANO", "JOSE LUIS VALVERDE", "DIEGO RODRIGUEZ"]
-        self.correos_analistas = {
-            "Walter Lopez" : "wlopez@claro.com.pe",
-            "Yolanda Oliva" : "yolanda.oliva@claro.com.pe",
-            "Juan Carlos Huatay" : "juan.huatay@claro.com.pe",
-            "Raquel Cayetano" :"rcayetano@claro.com.pe",
-            "Jose Luis Valverde" : "jvalverde@claro.com.pe",
-            "Diego Rodriguez": "diego.rodriguez@claro.com.pe"}
-        meses = {
-            "01": "enero",
-            "02": "febrero",
-            "03": "marzo",
-            "04": "abril",
-            "05": "mayo",
-            "06": "junio",
-            "07": "julio",
-            "08": "agosto",
-            "09": "septiembre",
-            "10": "octubre",
-            "11": "noviembre",
-            "12": "diciembre"}
         hoy = datetime.today()
         dia = hoy.strftime("%d")
         mes = hoy.strftime("%m")
         año = hoy.strftime("%Y")
         nombre_mes = meses.get(mes)
         self.fecha_hoy = f"{dia} de {nombre_mes} de {año}"
-        print(f"Fecha hoy: {self.fecha_hoy}\n")
     
     def deshabilitar_botones(self):
         self.boton_ejecutar.configure(state="disabled")
@@ -84,7 +59,7 @@ class Cartas():
         analistas = self.df_cruce["ANALISTA_ACT"].drop_duplicates().to_list()
         
         cuentas = validar_cuentas(cuentas_base, cuentas_cruce)
-        validar_analistas(analistas, self.analistas_validados)
+        validar_analistas(analistas)
         
         for cuenta in cuentas:
             self.df_cuenta = self.df_base[self.df_base["Cuenta"] == cuenta]
