@@ -7,6 +7,7 @@ from datetime import datetime
 from threading import Thread
 
 from src.database.conexion import *
+from src.models.validar_data import validar_cuentas, validar_analistas
 from src.models.generar_dataframes import generar_dataframes
 from src.models.generar_doc import generar_doc
 from src.models.generar_excel import generar_excel
@@ -76,47 +77,20 @@ class Cartas():
         thread.start()
         self.app.after(1000, self.verificar_thread, thread)
     
-    def validar_cuentas(self):
-        cuentas = self.df_base["Cuenta"].drop_duplicates().to_list()
-        print(f"Deudores: [{cuentas}]\n")
-        cuentas_no_encontradas = []
-        cuentas_copia = cuentas.copy()
-        
-        for cuenta in cuentas_copia:
-            if cuenta not in self.df_cruce["Deudor"].to_list():
-                cuentas.remove(cuenta)
-                cuentas_no_encontradas.append(cuenta)        
-        
-        if len(cuentas_no_encontradas) == 0:
-            print("Deudores OK.\n")
-        else:
-            print(f"Deudores no encontrados: [{cuentas_no_encontradas}]\n")
-        
-        self.cuentas = cuentas
-    
-    def validar_analistas(self):
-        analistas = self.df_cruce["ANALISTA_ACT"].drop_duplicates().to_list()
-        analistas_no_validados = []
-        for analista in analistas:
-            if analista not in self.analistas_validados:
-                analistas_no_validados.append(analista)
-        
-        if len(analistas_no_validados) == 0:
-            print("Analistas OK\n")
-        else:
-            print("Analistas no validados: ",analistas_no_validados,"\n")
-    
     def generar_cartas_requerimiento_pago(self):
         dataframes = generar_dataframes(self.base, self.ruta_dacxa, self.ruta_dac_cdr)
         self.df_base = dataframes[0]
         self.df_cruce = dataframes[1]
         
         print(f"Registros Base: [{self.df_base.shape[0]}]\n")
+        cuentas_base = self.df_base["Cuenta"].drop_duplicates().to_list()
+        cuentas_cruce = self.df_cruce["Deudor"].to_list()
+        analistas = self.df_cruce["ANALISTA_ACT"].drop_duplicates().to_list()
         
-        self.validar_cuentas()
-        self.validar_analistas()
+        cuentas = validar_cuentas(cuentas_base, cuentas_cruce)
+        validar_analistas(analistas, self.analistas_validados)
         
-        for cuenta in self.cuentas:
+        for cuenta in cuentas:
             self.df_cuenta = self.df_base[self.df_base["Cuenta"] == cuenta]
             if (self.df_cuenta["Demora"] >= 0).all():
                 self.generar_cartas_sin_deudaxvencer(cuenta)
@@ -307,6 +281,7 @@ class Cartas():
     
     def ejecutar(self):
         self.progressbar.start()
+        start = time.time()
         query = """SELECT * FROM RUTAS WHERE ID == 0"""
         try:
             datos = ejecutar_query(query)
@@ -323,7 +298,10 @@ class Cartas():
         except Exception as ex:
             messagebox.showerror("Error", "Detalle:\n" + str(ex))
         finally:
+            end = time.time()
             self.progressbar.stop()
+            tiempo_promedio = end - start
+            print(f"Tiempo ejecución: {tiempo_promedio} segundos.")
     
     def crear_app(self):
         self.app = CTk()
@@ -383,8 +361,4 @@ def main():
 
 
 if __name__ == "__main__":
-    start = time.time()
     main()
-    end = time.time()
-    tiempo_promedio = end - start
-    print(f"Tiempo ejecución: {tiempo_promedio} segundos.")
