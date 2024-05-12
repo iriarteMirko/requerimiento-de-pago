@@ -1,4 +1,4 @@
-from ..utils.variables import *
+from ..utils.variables import centenas, decenas, diez_a_diecinueve, unidades
 
 
 def separar_entero_decimal(num):

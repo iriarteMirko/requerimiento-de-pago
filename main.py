@@ -2,7 +2,7 @@ import warnings
 import time
 
 from customtkinter import *
-from tkinter import messagebox, filedialog
+from tkinter import messagebox
 from datetime import datetime
 from threading import Thread
 
@@ -11,8 +11,10 @@ from src.models.validar_data import validar_cuentas, validar_analistas
 from src.models.generar_dataframes import generar_dataframes
 from src.models.generar_doc import generar_doc
 from src.models.generar_excel import generar_excel
+from src.models.seleccionar_archivos import seleccionar_dacxanalista, seleccionar_dac_cdr
+from src.utils.variables import meses, correos_analistas
 from src.models.numeros import *
-
+from src.routes.rutas import *
 
 warnings.filterwarnings("ignore")
 
@@ -49,7 +51,7 @@ class Cartas():
         self.app.after(1000, self.verificar_thread, thread)
     
     def generar_cartas_requerimiento_pago(self):
-        dataframes = generar_dataframes(self.base, self.ruta_dacxa, self.ruta_dac_cdr)
+        dataframes = generar_dataframes(base, self.ruta_dacxa, self.ruta_dac_cdr)
         self.df_base = dataframes[0]
         self.df_cruce = dataframes[1]
         
@@ -70,11 +72,13 @@ class Cartas():
     
     def generar_cartas_sin_deudaxvencer(self, cuenta):
         razon_social = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["NOMBRE DAC"].iloc[0].upper()
+        razon_social_2 = razon_social
         direccion_legal = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["DIRECCIÓN LEGAL"].iloc[0]
         distrito = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["DISTRITO"].iloc[0]
         provincia = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["PROVINCIA"].iloc[0]
         departamento = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["DPTO."].iloc[0]
         dias_demora = self.df_cuenta["Demora"].iloc[0]
+        dias_demora_2 = dias_demora
         
         deuda_vencida = round(self.df_cuenta["Importe"].sum(),2)
         parte_entera_deuda_vencida, parte_decimal_deuda_vencida = separar_entero_decimal(deuda_vencida)
@@ -84,10 +88,7 @@ class Cartas():
         
         analista_mayuscula = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["ANALISTA_ACT"].iloc[0]
         analista = " ".join([palabra.capitalize() for palabra in analista_mayuscula.lower().split(" ")])
-        correo_analista = self.correos_analistas.get(analista)
-        
-        dias_demora_2 = dias_demora
-        razon_social_2 = razon_social
+        correo_analista = correos_analistas.get(analista)
         
         ruta_doc = resource_path("./results/"+razon_social+".docx")
         self.df_cuenta.to_excel(resource_path("./results/"+razon_social+".xlsx"), index=False) # Sin deudas por vencer
@@ -108,16 +109,18 @@ class Cartas():
             "[razon_social_2]": {"value": str(razon_social_2), "font_size": 8, "bold": True},
         }
         
-        generar_doc(self.modelo_2, replacements, ruta_doc)
+        generar_doc(modelo_2, replacements, ruta_doc)
         generar_excel(razon_social)
-
+    
     def generar_cartas_con_deudaxvencer(self, cuenta):
         razon_social = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["NOMBRE DAC"].iloc[0].upper()
+        razon_social_2 = razon_social
         direccion_legal = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["DIRECCIÓN LEGAL"].iloc[0]
         distrito = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["DISTRITO"].iloc[0]
         provincia = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["PROVINCIA"].iloc[0]
         departamento = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["DPTO."].iloc[0]
         dias_demora = self.df_cuenta["Demora"].iloc[0]
+        dias_demora_2 = dias_demora
         
         deuda_vencida = round(self.df_cuenta[self.df_cuenta["Demora"] >= 0]["Importe"].sum(),2)
         parte_entera_deuda_vencida, parte_decimal_deuda_vencida = separar_entero_decimal(deuda_vencida)
@@ -133,10 +136,7 @@ class Cartas():
         
         analista_mayuscula = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["ANALISTA_ACT"].iloc[0]
         analista = " ".join([palabra.capitalize() for palabra in analista_mayuscula.lower().split(" ")])
-        correo_analista = self.correos_analistas.get(analista)
-        
-        dias_demora_2 = dias_demora
-        razon_social_2 = razon_social
+        correo_analista = correos_analistas.get(analista)
         
         ruta_doc = resource_path("./results/"+razon_social+".docx")
         self.df_cuenta.to_excel(resource_path("./results/"+razon_social+".xlsx"), index=False) # Con deudas por vencer
@@ -159,52 +159,8 @@ class Cartas():
             "[razon_social_2]": {"value": str(razon_social_2), "font_size": 8, "bold": True},
         }
         
-        generar_doc(self.modelo_1, replacements, ruta_doc)
+        generar_doc(modelo_1, replacements, ruta_doc)
         generar_excel(razon_social)
-    
-    def seleccionar_dacxanalista(self):
-        archivo_excel = filedialog.askopenfilename(
-            initialdir="/",
-            title="Seleccionar archivo DACxANALISTA",
-            filetypes=(("Archivos de Excel", "*.xlsx"), ("Todos los archivos", "*.*"))
-        )
-        dacxanalista_path = archivo_excel
-        
-        query = ("""UPDATE RUTAS
-                    SET DACXANALISTA == '""" + dacxanalista_path + """'
-                    WHERE ID == 0""")
-        conexion = conexionSQLite()
-        try:
-            cursor = conexion.cursor()
-            cursor.execute(query)
-            conexion.commit()
-        except Exception as ex:
-            messagebox.showerror("Error", str(ex))
-        finally:
-            cursor.close()
-            conexion.close
-    
-    def seleccionar_base_dac_cdr(self):
-        archivo_excel = filedialog.askopenfilename(
-            initialdir="/",
-            title="Seleccionar archivo Base DAC y CDR",
-            filetypes=(("Archivos de Excel", "*.xlsx"), ("Todos los archivos", "*.*"))
-        )
-        dac_cdr_path = archivo_excel
-        
-        query = ("""UPDATE RUTAS
-                    SET BASE_DAC_CDR == '""" + dac_cdr_path + """'
-                    WHERE ID == 0""")
-        conexion = conexionSQLite()
-        try:
-            cursor = conexion.cursor()
-            cursor.execute(query)
-            conexion.commit()
-        except Exception as ex:
-            messagebox.showerror("Error", str(ex))
-        finally:
-            cursor.close()
-            conexion.close
     
     def ejecutar(self):
         self.progressbar.start()
@@ -255,7 +211,7 @@ class Cartas():
         ruta_dacxa.pack(padx=(20, 20), pady=(5, 0), fill="both", expand=True, anchor="center", side="top")
         self.boton_dacx = CTkButton(frame_base, text="Seleccionar", font=("Calibri",15), text_color="white",
                                 fg_color="transparent", border_color="#d11515", border_width=2, hover_color="#d11515", 
-                                width=25, corner_radius=25, command=lambda: self.seleccionar_dacxanalista())
+                                width=25, corner_radius=25, command=lambda: seleccionar_dacxanalista())
         self.boton_dacx.pack(padx=(20, 20), pady=(0, 15), fill="both", anchor="center", side="bottom")
         
         frame_dacx = CTkFrame(main_frame)
@@ -265,7 +221,7 @@ class Cartas():
         ruta_daccdr.pack(padx=(20, 20), pady=(5, 0), fill="both", expand=True, anchor="center", side="top")
         self.boton_dac_cdr = CTkButton(frame_dacx, text="Seleccionar", font=("Calibri",15), text_color="white",
                                 fg_color="transparent", border_color="#d11515", border_width=2, hover_color="#d11515", 
-                                width=25, corner_radius=25, command=lambda: self.seleccionar_base_dac_cdr())
+                                width=25, corner_radius=25, command=lambda: seleccionar_dac_cdr())
         self.boton_dac_cdr.pack(padx=(20, 20), pady=(0, 15), fill="both", anchor="center", side="bottom")
         
         self.boton_ejecutar = CTkButton(main_frame, text="GENERAR CARTAS", text_color="black", font=("Calibri",20,"bold"), 
