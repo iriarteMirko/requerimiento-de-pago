@@ -33,6 +33,8 @@ class App():
     
     def ejecutar_tarea(self):
         self.progressbar.start()
+        self.cuadro.configure(state="normal")
+        self.cuadro.delete("1.0", "end")
         query = """SELECT * FROM RUTAS WHERE ID == 0"""
         try:
             datos = ejecutar_query(query)
@@ -46,7 +48,7 @@ class App():
                 messagebox.showerror("Error", "No se encontraró el archivo DAC y CDR en la ruta especificada.")
             else:
                 start = time.time()
-                generar_cartas(ruta_dacxa, ruta_dac_cdr)
+                generar_cartas(ruta_dacxa, ruta_dac_cdr, self.cuadro)
         except Exception as ex:
             messagebox.showerror("Error", "Detalle:\n" + str(ex))
         finally:
@@ -54,9 +56,10 @@ class App():
             self.progressbar.stop()
             if start is not None:
                 tiempo_promedio = end - start
-                print(f"Tiempo ejecución: {tiempo_promedio} segundos.")
+                self.cuadro.insert("end", f"Tiempo ejecución: {(round(tiempo_promedio, 2))} segundos.\n")
             else:
-                print("No se ejecutó la tarea.")
+                self.cuadro.insert("end", "No se ejecutó la tarea.\n")
+            self.cuadro.configure(state="disabled")
     
     def crear_app(self):
         self.app = CTk()

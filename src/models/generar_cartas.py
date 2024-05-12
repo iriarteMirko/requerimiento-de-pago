@@ -16,18 +16,23 @@ año = hoy.strftime("%Y")
 nombre_mes = meses.get(mes)
 fecha_hoy = f"{dia} de {nombre_mes} de {año}"
 
-def generar_cartas(ruta_dacxa, ruta_dac_cdr):
+def generar_cartas(ruta_dacxa, ruta_dac_cdr, cuadro):
     dataframes = generar_dataframes(base, ruta_dacxa, ruta_dac_cdr)
     df_base = dataframes[0]
     df_cruce = dataframes[1]
     
-    print(f"Registros Base: [{df_base.shape[0]}]\n")
+    cuadro.insert("end", f"Registros: {df_base.shape[0]}\n")
+    
     cuentas_base = df_base["Cuenta"].drop_duplicates().to_list()
     cuentas_cruce = df_cruce["Deudor"].to_list()
     analistas = df_cruce["ANALISTA_ACT"].drop_duplicates().to_list()
     
-    cuentas = validar_cuentas(cuentas_base, cuentas_cruce)
-    validar_analistas(analistas)
+    cuadro.insert("end", f"Deudores: {cuentas_base}\n")
+    cuentas, mensaje_cuentas = validar_cuentas(cuentas_base, cuentas_cruce)
+    cuadro.insert("end", mensaje_cuentas)
+    
+    mensaje_analistas = validar_analistas(analistas)
+    cuadro.insert("end", mensaje_analistas)
     
     for cuenta in cuentas:
         df_cuenta = df_base[df_base["Cuenta"] == cuenta]

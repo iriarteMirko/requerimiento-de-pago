@@ -2,7 +2,6 @@ from ..utils.variables import analistas_validados
 
 
 def validar_cuentas(cuentas_base, cuentas_cruce):
-        print(f"Deudores: {cuentas_base}\n")
         cuentas_no_encontradas = []
         cuentas_copia = cuentas_base.copy()
         
@@ -12,11 +11,11 @@ def validar_cuentas(cuentas_base, cuentas_cruce):
                 cuentas_no_encontradas.append(cuenta)
         
         if len(cuentas_no_encontradas) == 0:
-            print("Deudores OK.\n")
+            mensaje = "Deudores OK\n"
         else:
-            print(f"Deudores no encontrados: {cuentas_no_encontradas}\n")
+            mensaje = f"Deudores no encontrados: {cuentas_no_encontradas}\n"
         
-        return cuentas_base
+        return cuentas_base, mensaje
     
 def validar_analistas(analistas):
     analistas_no_validados = []
@@ -25,6 +24,8 @@ def validar_analistas(analistas):
             analistas_no_validados.append(analista)
     
     if len(analistas_no_validados) == 0:
-        print("Analistas OK\n")
+        mensaje = "Analistas OK\n"
     else:
-        print("Analistas no validados: ",analistas_no_validados,"\n")
+        mensaje = f"Analistas no validados: {analistas_no_validados}\n"
+    
+    return mensaje
