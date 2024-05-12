@@ -76,12 +76,9 @@ class Cartas():
         else:
             self.habilitar_botones()
     
-    def iniciar_tarea(self, action):
+    def iniciar_tarea(self):
         self.deshabilitar_botones()
-        if action == 1:
-            thread = Thread(target=self.ejecutar)
-        else:
-            return
+        thread = Thread(target=self.ejecutar)
         thread.start()
         self.app.after(1000, self.verificar_thread, thread)
     
@@ -378,7 +375,6 @@ class Cartas():
         query = """SELECT * FROM RUTAS WHERE ID == 0"""
         try:
             datos = ejecutar_query(query)
-            print("hola", datos)
             self.ruta_dacxa = datos[0][1]
             self.ruta_dac_cdr = datos[0][2]
             if self.ruta_dacxa is None or self.ruta_dac_cdr is None:
@@ -431,7 +427,7 @@ class Cartas():
         
         self.boton_ejecutar = CTkButton(main_frame, text="GENERAR CARTAS", text_color="black", font=("Calibri",20,"bold"), 
                                     border_color="black", border_width=3, fg_color="gray", 
-                                    hover_color="red", command=lambda: self.iniciar_tarea(1))
+                                    hover_color="red", command=lambda: self.iniciar_tarea())
         self.boton_ejecutar.grid(row=1, column=0, columnspan=2, ipady=20, padx=(20, 20), pady=(20, 0), sticky="nsew")
         
         self.cuadro = CTkTextbox(main_frame, font=("Calibri",15), height=50, border_color="black", border_width=2)
