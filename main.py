@@ -281,7 +281,6 @@ class Cartas():
     
     def ejecutar(self):
         self.progressbar.start()
-        start = time.time()
         query = """SELECT * FROM RUTAS WHERE ID == 0"""
         try:
             datos = ejecutar_query(query)
@@ -294,6 +293,7 @@ class Cartas():
             elif not os.path.exists(self.ruta_dac_cdr):
                 messagebox.showerror("Error", "No se encontraró el archivo DAC y CDR en la ruta especificada.")
             else:
+                start = time.time()
                 self.generar_cartas_requerimiento_pago()
         except Exception as ex:
             messagebox.showerror("Error", "Detalle:\n" + str(ex))
@@ -343,7 +343,7 @@ class Cartas():
                                     hover_color="red", command=lambda: self.iniciar_tarea())
         self.boton_ejecutar.grid(row=1, column=0, columnspan=2, ipady=20, padx=(20, 20), pady=(20, 0), sticky="nsew")
         
-        self.cuadro = CTkTextbox(main_frame, font=("Calibri",15), height=50, border_color="black", border_width=2)
+        self.cuadro = CTkTextbox(main_frame, font=("Calibri",15), height=100, border_color="black", border_width=2)
         self.cuadro.grid(row=2, column=0, columnspan=2, padx=(20, 20), pady=(20, 0), sticky="nsew")
         self.cuadro.configure(state="disabled")
         
