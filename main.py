@@ -11,6 +11,7 @@ from src.models.validar_data import validar_cuentas, validar_analistas
 from src.models.generar_dataframes import generar_dataframes
 from src.models.generar_doc import generar_doc
 from src.models.generar_excel import generar_excel
+from src.models.numeros import *
 
 
 warnings.filterwarnings("ignore")
@@ -21,11 +22,6 @@ class Cartas():
         self.base = resource_path("BASE.xlsx")
         self.modelo_1 = resource_path("./modelos/MODELO_1.docx")
         self.modelo_2 = resource_path("./modelos/MODELO_2.docx")
-        self.unidades = ["", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"]
-        self.diez_a_diecinueve = ["diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho", "diecinueve"]
-        self.veintiuno_a_veintinueve = ["", "veintiuno", "veintidos", "veintitres", "veinticuatro", "veinticinco", "veintiseis", "veintisiete", "veintiocho", "veintinueve"]
-        self.decenas = ["", "", "veinte", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa"]
-        self.centenas = ["", "ciento", "doscientos", "trescientos", "cuatrocientos", "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"]
         self.analistas_validados = ["WALTER LOPEZ", "YOLANDA OLIVA", "JUAN CARLOS HUATAY", "RAQUEL CAYETANO", "JOSE LUIS VALVERDE", "DIEGO RODRIGUEZ"]
         self.correos_analistas = {
             "Walter Lopez" : "wlopez@claro.com.pe",
@@ -106,9 +102,9 @@ class Cartas():
         dias_demora = self.df_cuenta["Demora"].iloc[0]
         
         deuda_vencida = round(self.df_cuenta["Importe"].sum(),2)
-        parte_entera_deuda_vencida, parte_decimal_deuda_vencida = self.separar_entero_decimal(deuda_vencida)
+        parte_entera_deuda_vencida, parte_decimal_deuda_vencida = separar_entero_decimal(deuda_vencida)
         deuda_vencida_soles = f"S/ {parte_entera_deuda_vencida}.{parte_decimal_deuda_vencida}"
-        parte_entera_deuda_vencida_a_texto = self.numero_entero_a_texto(int(parte_entera_deuda_vencida))
+        parte_entera_deuda_vencida_a_texto = numero_entero_a_texto(int(parte_entera_deuda_vencida))
         deuda_vencida_texto = f"({parte_entera_deuda_vencida_a_texto} con {parte_decimal_deuda_vencida}/100 soles)"
         
         analista_mayuscula = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["ANALISTA_ACT"].iloc[0]
@@ -149,15 +145,15 @@ class Cartas():
         dias_demora = self.df_cuenta["Demora"].iloc[0]
         
         deuda_vencida = round(self.df_cuenta[self.df_cuenta["Demora"] >= 0]["Importe"].sum(),2)
-        parte_entera_deuda_vencida, parte_decimal_deuda_vencida = self.separar_entero_decimal(deuda_vencida)
+        parte_entera_deuda_vencida, parte_decimal_deuda_vencida = separar_entero_decimal(deuda_vencida)
         deuda_vencida_soles = f"S/ {parte_entera_deuda_vencida}.{parte_decimal_deuda_vencida}"
-        parte_entera_deuda_vencida_a_texto = self.numero_entero_a_texto(int(parte_entera_deuda_vencida))
+        parte_entera_deuda_vencida_a_texto = numero_entero_a_texto(int(parte_entera_deuda_vencida))
         deuda_vencida_texto = f"({parte_entera_deuda_vencida_a_texto} con {parte_decimal_deuda_vencida}/100 soles)"
         
         deuda_por_vencer = round(self.df_cuenta[self.df_cuenta["Demora"] < 0]["Importe"].sum(),2)
-        parte_entera_deuda_por_vencer, parte_decimal_deuda_por_vencer = self.separar_entero_decimal(deuda_por_vencer)
+        parte_entera_deuda_por_vencer, parte_decimal_deuda_por_vencer = separar_entero_decimal(deuda_por_vencer)
         deuda_por_vencer_soles = f"S/ {parte_entera_deuda_por_vencer}.{parte_decimal_deuda_por_vencer}"
-        parte_entera_deuda_por_vencer_a_texto = self.numero_entero_a_texto(int(parte_entera_deuda_por_vencer))
+        parte_entera_deuda_por_vencer_a_texto = numero_entero_a_texto(int(parte_entera_deuda_por_vencer))
         deuda_por_vencer_texto = f"({parte_entera_deuda_por_vencer_a_texto} con {parte_decimal_deuda_por_vencer}/100 soles)"
         
         analista_mayuscula = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["ANALISTA_ACT"].iloc[0]
@@ -190,50 +186,6 @@ class Cartas():
         
         generar_doc(self.modelo_1, replacements, ruta_doc)
         generar_excel(razon_social)
-
-    def separar_entero_decimal(self, numero):
-        numero_str = str(numero)
-        if "." not in numero_str:
-            parte_entera = numero_str
-            parte_decimal = "00"
-        else:
-            parte_entera, parte_decimal = numero_str.split(".")
-        
-        if len(parte_decimal) > 2:
-            parte_decimal = parte_decimal[:2]
-        elif len(parte_decimal) < 2:
-            parte_decimal = parte_decimal.ljust(2, "0")
-        
-        return parte_entera, parte_decimal
-
-    def numero_entero_a_texto(self, num):
-        if num == 0:
-            return "cero"
-        grupos = []
-        while num > 0:
-            grupos.append(num % 1000)
-            num //= 1000
-        textos = [self.convertir_grupo_a_texto(grupo) for grupo in grupos]
-        if len(textos) > 1:
-            textos[1] += " mil"
-        if len(textos) > 2:
-            textos[2] = "un millón" if textos[2] == "uno" else textos[2] + " millones"
-        return " ".join(textos[::-1]).strip()
-
-    def convertir_grupo_a_texto(self, num):
-        texto = ""
-        if num >= 100:
-            texto += self.centenas[num // 100]
-            num %= 100
-        if num >= 20:
-            texto += " " + self.decenas[num // 10]
-            num %= 10
-        elif num >= 10:
-            texto += " " + self.diez_a_diecinueve[num - 10]
-            num = 0
-        if num > 0:
-            texto += " y " + self.unidades[num]
-        return texto.strip()
     
     def seleccionar_dacxanalista(self):
         archivo_excel = filedialog.askopenfilename(
@@ -300,8 +252,11 @@ class Cartas():
         finally:
             end = time.time()
             self.progressbar.stop()
-            tiempo_promedio = end - start
-            print(f"Tiempo ejecución: {tiempo_promedio} segundos.")
+            if start is not None:
+                tiempo_promedio = end - start
+                print(f"Tiempo ejecución: {tiempo_promedio} segundos.")
+            else:
+                print("No se ejecutó la tarea.")
     
     def crear_app(self):
         self.app = CTk()

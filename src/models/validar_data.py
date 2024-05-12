@@ -1,6 +1,3 @@
-
-
-
 def validar_cuentas(cuentas_base, cuentas_cruce):
         print(f"Deudores: {cuentas_base}\n")
         cuentas_no_encontradas = []
