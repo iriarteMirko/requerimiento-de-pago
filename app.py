@@ -56,14 +56,14 @@ class App():
             self.progressbar.stop()
             if start is not None:
                 tiempo_promedio = end - start
-                self.cuadro.insert("end", f"Tiempo ejecución: {(round(tiempo_promedio, 2))} segundos.\n")
+                self.cuadro.insert("end", f"Tiempo de ejecución: {(round(tiempo_promedio, 2))} segundos.\n")
             else:
                 self.cuadro.insert("end", "No se ejecutó la tarea.\n")
             self.cuadro.configure(state="disabled")
     
     def crear_app(self):
         self.app = CTk()
-        self.app.title("Generador de Cartas")
+        self.app.title("Cartas de Requerimiento de Pago")
         icon_path = resource_path("./src/images/icono.ico")
         if os.path.isfile(icon_path):
             self.app.iconbitmap(icon_path)
@@ -101,7 +101,7 @@ class App():
                                     hover_color="red", command=lambda: self.iniciar_tarea())
         self.boton_ejecutar.grid(row=1, column=0, columnspan=2, ipady=20, padx=(20, 20), pady=(20, 0), sticky="nsew")
         
-        self.cuadro = CTkTextbox(main_frame, font=("Calibri",15), height=100, border_color="black", border_width=2)
+        self.cuadro = CTkTextbox(main_frame, font=("Calibri",15), height=110, border_color="black", border_width=2)
         self.cuadro.grid(row=2, column=0, columnspan=2, padx=(20, 20), pady=(20, 0), sticky="nsew")
         self.cuadro.configure(state="disabled")
         
