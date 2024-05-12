@@ -1,5 +1,3 @@
-import pandas as pd
-import openpyxl as op
 import warnings
 import time
 
@@ -8,14 +6,10 @@ from tkinter import messagebox, filedialog
 from datetime import datetime
 from threading import Thread
 
-from docx import Document
-from docx.shared import Pt
-from openpyxl.styles import PatternFill, Border, Side, Alignment, Font, numbers
-from openpyxl.utils import get_column_letter
-
 from src.database.conexion import *
 from src.models.dataframes import generar_dataframes
-from src.utils.resource_path import resource_path
+from src.models.generar_doc import generar_doc
+from src.models.generar_excel import generar_excel
 
 
 warnings.filterwarnings("ignore")
@@ -129,45 +123,6 @@ class Cartas():
             else:
                 self.generar_cartas_con_deudaxvencer(cuenta)
     
-    def generar_excel(self, razon_social):
-        wb = op.load_workbook(resource_path("./results/"+razon_social+".xlsx"))
-        ws = wb.active
-        
-        fill = PatternFill(start_color="16365C", end_color="16365C", fill_type="solid")
-        font_header = Font(name="Arial", size=10, color="FFFFFF", bold=True)
-        font_cells = Font(name="Arial", size=10)
-        border = Border(left=Side(style="thin"), right=Side(style="thin"), top=Side(style="thin"), bottom=Side(style="thin"))
-        alignment = Alignment(horizontal="center", vertical="center")
-        
-        for row in ws.iter_rows():
-            for cell in row:
-                cell.border = border
-                cell.alignment = alignment
-                cell.font = font_cells
-                if cell.row == 1:  # Si la celda está en la primera fila (encabezado)
-                    cell.fill = fill
-                    cell.font = font_header
-                if cell.column == 4:  # Si la celda está en la cuarta columna
-                    cell.number_format = "dd/mm/yyyy"
-                if cell.column == 8 and cell.row > 1:
-                    cell.number_format = numbers.FORMAT_NUMBER_COMMA_SEPARATED1
-                    cell.alignment = Alignment(horizontal="right", vertical="center")
-        
-        column_widths = [8, 13, 17, 13, 4, 8, 8, 10]
-        for i, column_width in enumerate(column_widths):
-            ws.column_dimensions[get_column_letter(i+1)].width = column_width
-        
-        last_row = ws.max_row
-        # Calcular la suma de todos los valores en esa columna (excluyendo la cabecera)
-        column_sum = sum(cell.value for cell in ws['H'][1:last_row] if isinstance(cell.value, (int, float)))
-        cell_sum = ws.cell(row=last_row + 1, column=8, value=column_sum)
-        cell_sum.number_format = numbers.FORMAT_NUMBER_COMMA_SEPARATED1
-        cell_sum.alignment = Alignment(horizontal="right", vertical="center")
-        cell_sum.font = Font(name="Arial", size=10, bold=True)
-        cell_sum.border = border
-        
-        wb.save(resource_path("./results/"+razon_social+".xlsx"))
-    
     def generar_cartas_sin_deudaxvencer(self, cuenta):
         razon_social = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["NOMBRE DAC"].iloc[0].upper()
         direccion_legal = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["DIRECCIÓN LEGAL"].iloc[0]
@@ -189,10 +144,9 @@ class Cartas():
         dias_demora_2 = dias_demora
         razon_social_2 = razon_social
         
+        ruta_doc = resource_path("./results/"+razon_social+".docx")
         self.df_cuenta.to_excel(resource_path("./results/"+razon_social+".xlsx"), index=False) # Sin deudas por vencer
-        self.generar_excel(razon_social)
         
-        doc = Document(self.modelo_2)
         replacements = {
             "[fecha_hoy]": {"value": str(self.fecha_hoy), "font_size": 11},
             "[razon_social]": {"value": str(razon_social), "font_size": 11, "bold": True},
@@ -209,17 +163,8 @@ class Cartas():
             "[razon_social_2]": {"value": str(razon_social_2), "font_size": 8, "bold": True},
         }
         
-        for paragraph in doc.paragraphs:
-            for key, attributes in replacements.items():
-                if key in paragraph.text:
-                    paragraph.text = paragraph.text.replace(key, attributes["value"])
-                    run = paragraph.runs[0]
-                    run.font.name = 'Arial'
-                    run.font.size = Pt(attributes["font_size"])
-                    run.bold = attributes.get("bold", False)
-        
-        ruta_doc = resource_path("./results/"+razon_social+".docx")
-        doc.save(ruta_doc)
+        generar_doc(self.modelo_2, replacements, ruta_doc)
+        generar_excel(razon_social)
 
     def generar_cartas_con_deudaxvencer(self, cuenta):
         razon_social = self.df_cruce[self.df_cruce["Deudor"]==cuenta]["NOMBRE DAC"].iloc[0].upper()
@@ -248,10 +193,9 @@ class Cartas():
         dias_demora_2 = dias_demora
         razon_social_2 = razon_social
         
+        ruta_doc = resource_path("./results/"+razon_social+".docx")
         self.df_cuenta.to_excel(resource_path("./results/"+razon_social+".xlsx"), index=False) # Con deudas por vencer
-        self.generar_excel(razon_social)
         
-        doc = Document(self.modelo_1)
         replacements = {
             "[fecha_hoy]": {"value": str(self.fecha_hoy), "font_size": 11},
             "[razon_social]": {"value": str(razon_social), "font_size": 11, "bold": True},
@@ -270,17 +214,8 @@ class Cartas():
             "[razon_social_2]": {"value": str(razon_social_2), "font_size": 8, "bold": True},
         }
         
-        for paragraph in doc.paragraphs:
-            for key, attributes in replacements.items():
-                if key in paragraph.text:
-                    paragraph.text = paragraph.text.replace(key, attributes["value"])
-                    run = paragraph.runs[0]
-                    run.font.name = 'Arial'
-                    run.font.size = Pt(attributes["font_size"])
-                    run.bold = attributes.get("bold", False)
-        
-        ruta_doc = resource_path("./results/"+razon_social+".docx")
-        doc.save(ruta_doc)
+        generar_doc(self.modelo_1, replacements, ruta_doc)
+        generar_excel(razon_social)
 
     def separar_entero_decimal(self, numero):
         numero_str = str(numero)
