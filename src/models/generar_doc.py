@@ -1,6 +1,5 @@
 from docx import Document
 from docx.shared import Pt
-from src.utils.resource_path import resource_path
 
 
 def generar_doc(modelo_2, replacements, ruta_doc):
