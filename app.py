@@ -49,17 +49,18 @@ class App():
             else:
                 start = time.time()
                 generar_cartas(ruta_dacxa, ruta_dac_cdr, self.cuadro)
+            os.startfile(resource_path("./results/"))
         except Exception as ex:
             messagebox.showerror("Error", "Detalle:\n" + str(ex))
         finally:
             end = time.time()
-            self.progressbar.stop()
             if start is not None:
                 tiempo_promedio = end - start
                 self.cuadro.insert("end", f"Tiempo de ejecución: {(round(tiempo_promedio, 2))} segundos.\n")
             else:
                 self.cuadro.insert("end", "No se ejecutó la tarea.\n")
             self.cuadro.configure(state="disabled")
+            self.progressbar.stop()
     
     def crear_app(self):
         self.app = CTk()

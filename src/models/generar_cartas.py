@@ -1,4 +1,3 @@
-
 from datetime import datetime
 from .validar_data import validar_cuentas, validar_analistas
 from .generar_dataframes import generar_dataframes
@@ -37,9 +36,9 @@ def generar_cartas(ruta_dacxa, ruta_dac_cdr, cuadro):
     for cuenta in cuentas:
         df_cuenta = df_base[df_base["Cuenta"] == cuenta]
         if (df_cuenta["Demora"] >= 0).all():
-            generar_cartas_sin_deudaxvencer(cuenta, df_base, df_cruce)
+            generar_cartas_sin_deudaxvencer(cuenta, df_cuenta, df_cruce)
         else:
-            generar_cartas_con_deudaxvencer(cuenta, df_base, df_cruce)
+            generar_cartas_con_deudaxvencer(cuenta, df_cuenta, df_cruce)
 
 def generar_cartas_sin_deudaxvencer(cuenta, df_cuenta, df_cruce):
     razon_social = df_cruce[df_cruce["Deudor"]==cuenta]["NOMBRE DAC"].iloc[0].upper()
