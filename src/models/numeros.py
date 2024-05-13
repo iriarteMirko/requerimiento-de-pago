@@ -1,20 +1,20 @@
 from ..utils.variables import unidades, decenas, centenas, veinte_a_veintinueve, diez_a_diecinueve
 
 
-def separar_entero_decimal(numero):
-    numero_str = str(numero)
-    if "." not in numero_str:
-        parte_entera = numero_str
-        parte_decimal = "00"
+def separar_entero_decimal(num):
+    num_str = str(num)
+    if "." not in num_str:
+        entero = num_str
+        decimal = "00"
     else:
-        parte_entera, parte_decimal = numero_str.split(".")
+        entero, decimal = num_str.split(".")
     
-    if len(parte_decimal) > 2:
-        parte_decimal = parte_decimal[:2]
-    elif len(parte_decimal) < 2:
-        parte_decimal = parte_decimal.ljust(2, "0")
+    if len(decimal) > 2:
+        decimal = decimal[:2]
+    elif len(decimal) < 2:
+        decimal = decimal.ljust(2, "0")
     
-    return parte_entera, parte_decimal
+    return entero, decimal
 
 def convertir_grupo_a_texto(num):
     texto = ""
@@ -73,3 +73,12 @@ def numero_entero_a_texto(num):
     if len(textos) > 2:
         textos[2] = "un millón" if textos[2] == "uno" else textos[2] + " millones"
     return " ".join(textos[::-1]).strip().replace("  ", " ")
+
+def formato_numero(num):
+    entero, decimal = separar_entero_decimal(num)
+    deuda_soles = f"S/ {entero}.{decimal}"
+    
+    entero_texto = numero_entero_a_texto(int(entero))
+    deuda_texto = f"({entero_texto} con {decimal}/100 soles)"
+    
+    return deuda_soles, deuda_texto

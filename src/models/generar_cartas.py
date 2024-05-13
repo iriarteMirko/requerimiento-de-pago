@@ -3,7 +3,7 @@ from .validar_data import validar_cuentas, validar_analistas
 from .generar_dataframes import generar_dataframes
 from .generar_doc import generar_doc
 from .generar_excel import generar_excel
-from .numeros import *
+from .numeros import formato_numero
 from ..routes.rutas import *
 from ..utils.variables import meses, correos_analistas
 
@@ -51,10 +51,7 @@ def generar_cartas_sin_deudaxvencer(cuenta, df_cuenta, df_cruce):
     dias_demora_2 = dias_demora
     
     deuda_vencida = round(df_cuenta["Importe"].sum(),2)
-    parte_entera_deuda_vencida, parte_decimal_deuda_vencida = separar_entero_decimal(deuda_vencida)
-    deuda_vencida_soles = f"S/ {parte_entera_deuda_vencida}.{parte_decimal_deuda_vencida}"
-    parte_entera_deuda_vencida_a_texto = numero_entero_a_texto(int(parte_entera_deuda_vencida))
-    deuda_vencida_texto = f"({parte_entera_deuda_vencida_a_texto} con {parte_decimal_deuda_vencida}/100 soles)"
+    deuda_vencida_soles, deuda_vencida_texto = formato_numero(deuda_vencida)
     
     analista_mayuscula = df_cruce[df_cruce["Deudor"]==cuenta]["ANALISTA_ACT"].iloc[0]
     analista = " ".join([palabra.capitalize() for palabra in analista_mayuscula.lower().split(" ")])
@@ -93,16 +90,10 @@ def generar_cartas_con_deudaxvencer(cuenta, df_cuenta, df_cruce):
     dias_demora_2 = dias_demora
     
     deuda_vencida = round(df_cuenta[df_cuenta["Demora"] >= 0]["Importe"].sum(),2)
-    parte_entera_deuda_vencida, parte_decimal_deuda_vencida = separar_entero_decimal(deuda_vencida)
-    deuda_vencida_soles = f"S/ {parte_entera_deuda_vencida}.{parte_decimal_deuda_vencida}"
-    parte_entera_deuda_vencida_a_texto = numero_entero_a_texto(int(parte_entera_deuda_vencida))
-    deuda_vencida_texto = f"({parte_entera_deuda_vencida_a_texto} con {parte_decimal_deuda_vencida}/100 soles)"
+    deuda_vencida_soles, deuda_vencida_texto = formato_numero(deuda_vencida)
     
     deuda_por_vencer = round(df_cuenta[df_cuenta["Demora"] < 0]["Importe"].sum(),2)
-    parte_entera_deuda_por_vencer, parte_decimal_deuda_por_vencer = separar_entero_decimal(deuda_por_vencer)
-    deuda_por_vencer_soles = f"S/ {parte_entera_deuda_por_vencer}.{parte_decimal_deuda_por_vencer}"
-    parte_entera_deuda_por_vencer_a_texto = numero_entero_a_texto(int(parte_entera_deuda_por_vencer))
-    deuda_por_vencer_texto = f"({parte_entera_deuda_por_vencer_a_texto} con {parte_decimal_deuda_por_vencer}/100 soles)"
+    deuda_por_vencer_soles, deuda_por_vencer_texto = formato_numero(deuda_por_vencer)
     
     analista_mayuscula = df_cruce[df_cruce["Deudor"]==cuenta]["ANALISTA_ACT"].iloc[0]
     analista = " ".join([palabra.capitalize() for palabra in analista_mayuscula.lower().split(" ")])
