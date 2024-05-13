@@ -84,17 +84,17 @@ def formato_miles(num):
     num_str = str(num)
     if len(num_str) <= 3:
         return num_str
-    
-    miles = num_str[:-3]
-    cientos = num_str[-3:]
-    
-    miles_con_comas = ""
-    for i, digito in enumerate(miles[::-1]):
-        miles_con_comas += digito
-        if (i + 1) % 3 == 0 and (i + 1) != len(miles):
-            miles_con_comas += ","
-    
-    return miles_con_comas[::-1] + cientos
+    elif len(num_str) <= 6:
+        miles = num_str[:-3]
+        cientos = num_str[-3:]
+        return miles + "," + cientos
+    elif len(num_str) <= 9:
+        millones = num_str[:-6]
+        miles = num_str[-6:-3]
+        cientos = num_str[-3:]
+        return millones + "," + miles + "," + cientos
+    else:
+        return num_str
 
 def formato_numero(num):
     entero, decimal = separar_entero_decimal(num)
