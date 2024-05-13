@@ -1,4 +1,6 @@
 pandas
+customtkinter
 python-docx
 openpyxl
 pillow
+pyinstaller
